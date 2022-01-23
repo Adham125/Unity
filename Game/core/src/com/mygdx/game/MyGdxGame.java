@@ -11,12 +11,17 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.GL20;
 
 
 import static com.mygdx.game.utils.Constants.PPM;
 
 public class MyGdxGame extends ApplicationAdapter {
-	private SpriteBatch batch;
+	private SpriteBatch gameBatch;
+	private SpriteBatch HUDBatch;
+	private BitmapFont font;
 	private Texture img;
 
 	private final float scale = 2.0f;
@@ -26,15 +31,30 @@ public class MyGdxGame extends ApplicationAdapter {
 	private World world;
 	private Body player;
 	private Body platform;
+	
+	float PlunderInfoTextWidth;
+	float PlunderInfoTextHeight;
 
 	@Override
 	public void create () {
+		//get width and height of the display
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
 
-		batch = new SpriteBatch();
+		gameBatch = new SpriteBatch();
+		HUDBatch = new SpriteBatch();
+		
 		img = new Texture("PirateShip3Mast.png");
+		
+		//init fonts
+		font = new BitmapFont();
+		font.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+		
+		GlyphLayout PlunderInfoTextLayout = new GlyphLayout(font, "Plunder: ");
+		PlunderInfoTextWidth = PlunderInfoTextLayout.width;
+		PlunderInfoTextHeight = PlunderInfoTextLayout.height;
 
+		//init camera
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, w / scale, h / scale);
 
@@ -52,9 +72,20 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		b2dr.render(world, camera.combined.scl(PPM));
 
-		batch.begin();
-		batch.draw(img, player.getPosition().x * PPM - (img.getWidth() / scale), player.getPosition().y * PPM  - (img.getHeight() / scale));
-		batch.end();
+		//draw objects that make up the game world
+		gameBatch.begin();
+		
+		gameBatch.draw(img, player.getPosition().x * PPM - (img.getWidth() / scale), player.getPosition().y * PPM  - (img.getHeight() / scale));
+		
+		gameBatch.end();
+		
+		//draw overlay objects
+		HUDBatch.begin();
+		
+		font.draw(HUDBatch, "Plunder: ", Math.round(Gdx.graphics.getWidth()-(PlunderInfoTextWidth*1.2)), 
+				Math.round(Gdx.graphics.getHeight()-(PlunderInfoTextHeight*1.2)));
+		
+		HUDBatch.end();
 	}
 
 	@Override
@@ -66,7 +97,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	public void dispose () {
 		world.dispose();
 		b2dr.dispose();
-		batch.dispose();
+		gameBatch.dispose();
+		HUDBatch.dispose();
 	}
 
 	public void update (float delta){
@@ -74,7 +106,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		inputUpdate(delta);
 		cameraUpdate(delta);
-		batch.setProjectionMatrix(camera.combined);
+		gameBatch.setProjectionMatrix(camera.combined);
 	}
 
 	public void inputUpdate(float delta){

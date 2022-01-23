@@ -11,6 +11,7 @@ public class DesktopLauncher {
 		config.height = 1080;
 		config.backgroundFPS = 60;
 		config.foregroundFPS = 60;
+		config.title = "York Pirates";
 		new LwjglApplication(new MyGdxGame(), config);
 	}
 }
